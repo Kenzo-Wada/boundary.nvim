@@ -16,10 +16,10 @@ Install the plugin with your favourite manager. Example using [lazy.nvim](https:
 ```lua
 {
   'Kenzo-Wada/boundary.nvim',
+  branch='release',
   config = function()
     require('boundary').setup({
-      -- auto = true, -- enabled by default; automatically refresh markers on common buffer events
-      marker_text = "'use client'",
+      ...
     })
   end,
 }
