@@ -77,7 +77,7 @@ local function resolve_extends(path, extends)
     if file_exists(extends) then
       return util.normalize_path(extends)
     end
-    if not extends:match("%.json$") then
+    if not extends:match "%.json$" then
       local candidate = extends .. ".json"
       if file_exists(candidate) then
         return util.normalize_path(candidate)
@@ -86,7 +86,7 @@ local function resolve_extends(path, extends)
     return nil
   end
 
-  if not extends:match("[/\\]") and not extends:match("^%.") then
+  if not extends:match "[/\\]" and not extends:match "^%." then
     return nil
   end
 
@@ -96,7 +96,7 @@ local function resolve_extends(path, extends)
   end
 
   local candidates = { util.join_paths(dir, extends) }
-  if not extends:match("%.json$") then
+  if not extends:match "%.json$" then
     candidates[#candidates + 1] = util.join_paths(dir, extends .. ".json")
   end
 
