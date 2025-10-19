@@ -1,5 +1,6 @@
 local uv = vim.loop
 
+local alias_resolver = require "boundary.aliases"
 local directives = require "boundary.directives"
 local util = require "boundary.util"
 
@@ -10,11 +11,12 @@ local function has_extension(import_path)
 end
 
 local function resolve_alias(conf, base_dir, import_path)
-  if util.tbl_is_empty(conf.aliases) then
+  local aliases = alias_resolver.get_aliases(conf, base_dir)
+  if util.tbl_is_empty(aliases) then
     return {}
   end
 
-  for alias, target in pairs(conf.aliases) do
+  for alias, target in pairs(aliases) do
     if import_path:sub(1, #alias) == alias then
       local remainder = import_path:sub(#alias + 1)
       remainder = remainder:gsub("^/", "")
