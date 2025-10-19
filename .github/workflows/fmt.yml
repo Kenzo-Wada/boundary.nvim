@@ -15,11 +15,12 @@ jobs:
 
       - name: Install Stylua
         env:
-          STYLUA_VERSION: "0.20.2"
+          STYLUA_VERSION: "2.3.0"
+          STYLUA_ARCHIVE: "stylua-linux-x86_64.zip"
         run: |
           sudo apt-get update
           sudo apt-get install -y unzip
-          curl -L "https://github.com/JohnnyMorganz/StyLua/releases/download/v${STYLUA_VERSION}/stylua-linux-x86_64.zip" -o stylua.zip
+          curl -fL "https://github.com/JohnnyMorganz/StyLua/releases/download/v${STYLUA_VERSION}/${STYLUA_ARCHIVE}" -o stylua.zip
           unzip stylua.zip -d stylua-bin
           sudo install stylua-bin/stylua /usr/local/bin/stylua
 
