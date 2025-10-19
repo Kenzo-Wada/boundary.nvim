@@ -2,6 +2,14 @@ return {
   name = "marks every component exported from a client module",
   files = {
     ["package.json"] = [[{}]],
+    ["tsconfig.json"] = [[{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"]
+    }
+  }
+}]],
     ["components/ui/panel.tsx"] = [["use client"
 import * as React from 'react'
 
@@ -41,9 +49,6 @@ export default function Page() {
   },
   setup_opts = {
     auto = false,
-    aliases = {
-      ["@/"] = "",
-    },
   },
   expected_lines = { 9, 10, 11, 12 },
 }

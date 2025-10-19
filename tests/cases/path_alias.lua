@@ -2,6 +2,14 @@ return {
   name = "marks components imported through configured aliases",
   files = {
     ["package.json"] = [[{}]],
+    ["tsconfig.json"] = [[{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"]
+    }
+  }
+}]],
     ["components/Widget.tsx"] = [["use client"
 
 export default function Widget() {
@@ -17,9 +25,6 @@ export default function Page() {
   },
   setup_opts = {
     auto = false,
-    aliases = {
-      ["@/"] = "",
-    },
   },
   expected_lines = { 3 },
 }

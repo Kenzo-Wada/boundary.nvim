@@ -1,3 +1,4 @@
+local aliases = require "boundary.aliases"
 local config = require "boundary.config"
 local directives = require "boundary.directives"
 local imports = require "boundary.imports"
@@ -89,6 +90,7 @@ end
 function M.setup(opts)
   M.config = config.merge(opts)
   directives.reset()
+  aliases.reset()
   config.ensure_highlight(M.config)
   ensure_command()
   create_autocmd()
@@ -99,6 +101,7 @@ function M.reset()
   clear_autocmd()
   command_created = false
   directives.reset()
+  aliases.reset()
   M.config = config.defaults()
   config.ensure_highlight(M.config)
 
