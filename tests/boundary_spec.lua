@@ -347,11 +347,26 @@ export default function Page() {
 
   local marked = require("boundary").refresh(bufnr)
   t:eq(4, #marked, "all accordion components should be marked")
-  t:eq(9, marked[1], "marker should be placed on the <Accordion> line")
-  t:eq(10, marked[2], "marker should be placed on the <AccordionItem> line")
-  t:eq(11, marked[3], "marker should be placed on the <AccordionTrigger> line")
-  t:eq(12, marked[4], "marker should be placed on the <AccordionContent> line")
 
+  -- Dynamically find the line numbers for each relevant tag
+  local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
+  local function find_line(pattern)
+    for i, line in ipairs(lines) do
+      if line:find(pattern, 1, true) then
+        return i
+      end
+    end
+    return nil
+  end
+  local acc_line = find_line("<Accordion>")
+  local acc_item_line = find_line("<AccordionItem")
+  local acc_trigger_line = find_line("<AccordionTrigger>")
+  local acc_content_line = find_line("<AccordionContent>")
+
+  t:eq(acc_line, marked[1], "marker should be placed on the <Accordion> line")
+  t:eq(acc_item_line, marked[2], "marker should be placed on the <AccordionItem> line")
+  t:eq(acc_trigger_line, marked[3], "marker should be placed on the <AccordionTrigger> line")
+  t:eq(acc_content_line, marked[4], "marker should be placed on the <AccordionContent> line")
   local extmarks = vim.api.nvim_buf_get_extmarks(bufnr, require("boundary").namespace, 0, -1, {})
   t:eq(4, #extmarks, "virtual text markers should be applied to each line")
 
