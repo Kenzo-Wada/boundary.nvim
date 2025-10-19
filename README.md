@@ -19,7 +19,7 @@ Install the plugin with your favourite manager. Example using [lazy.nvim](https:
   branch='release',
   config = function()
     require('boundary').setup({
-      ...
+      auto = true, -- Optional: enable automatic refreshing (see below for more options)
     })
   end,
 }
