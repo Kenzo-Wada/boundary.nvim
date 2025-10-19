@@ -5,6 +5,13 @@ local default_config = {
   marker_hl_group = "BoundaryMarker",
   directives = { "'use client'", '"use client"' },
   search_extensions = { ".tsx", ".ts", ".jsx", ".js" },
+  aliases = {},
+  root_patterns = {
+    "package.json",
+    "tsconfig.json",
+    "jsconfig.json",
+    ".git",
+  },
   filetypes = {
     "javascript",
     "javascriptreact",

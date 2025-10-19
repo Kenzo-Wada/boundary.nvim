@@ -160,4 +160,41 @@ export default function Page() {
   rm_rf(root)
 end)
 
+suite:add("supports configured path aliases", function(t)
+  local root = create_temp_dir()
+  local old_cwd = uv.cwd()
+  uv.chdir(root)
+  write_file(join_paths(root, "package.json"), "{}")
+  write_file(
+    join_paths(root, "components/Button.tsx"),
+    "'use client'\nexport default function Button() { return null }\n"
+  )
+  write_file(
+    join_paths(root, "app/page.tsx"),
+    [[import Button from '@/components/Button'
+
+export default function Page() {
+  return <Button />
+}
+]]
+  )
+
+  require("boundary").reset()
+  require("boundary").setup { auto = false, aliases = { ["@/"] = "" } }
+
+  local bufnr = setup_buffer(join_paths(root, "app/page.tsx"))
+  vim.bo[bufnr].filetype = "typescriptreact"
+
+  local marked = require("boundary").refresh(bufnr)
+  t:eq(1, #marked, "alias import should be marked")
+  t:eq(3, marked[1], "marker should attach to JSX line")
+
+  local extmarks = vim.api.nvim_buf_get_extmarks(bufnr, require("boundary").namespace, 0, -1, {})
+  t:eq(1, #extmarks, "one extmark should be present for alias import")
+  t:eq(3, extmarks[1][2], "extmark should target JSX line")
+
+  uv.chdir(old_cwd)
+  rm_rf(root)
+end)
+
 return suite

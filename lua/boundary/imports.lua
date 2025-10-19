@@ -9,8 +9,52 @@ local function has_extension(import_path)
   return import_path:match "%.[^/]+$" ~= nil
 end
 
+local function resolve_alias(conf, base_dir, import_path)
+  if util.tbl_is_empty(conf.aliases) then
+    return nil
+  end
+
+  for alias, target in pairs(conf.aliases) do
+    if import_path:sub(1, #alias) == alias then
+      local remainder = import_path:sub(#alias + 1)
+      remainder = remainder:gsub("^/", "")
+      local target_path = target or ""
+      if target_path == "." then
+        target_path = ""
+      end
+      target_path = target_path:gsub("^%./", "")
+
+      local base
+      if util.is_absolute(target_path) then
+        base = target_path
+      else
+        local project_root = util.find_project_root(base_dir, conf.root_patterns)
+        if project_root then
+          base = util.join_paths(project_root, target_path)
+        else
+          base = util.join_paths(base_dir, target_path)
+        end
+      end
+
+      local combined = util.join_paths(base, remainder)
+      if combined ~= "" then
+        return util.normalize_path(combined)
+      end
+    end
+  end
+
+  return nil
+end
+
 function M.resolve_import_paths(conf, base_dir, import_path)
-  if not import_path:match "^%." then
+  local base_path
+  if import_path:match "^%." then
+    base_path = vim.fn.fnamemodify(base_dir .. "/" .. import_path, ":p")
+  else
+    base_path = resolve_alias(conf, base_dir, import_path)
+  end
+
+  if not base_path then
     return {}
   end
 
@@ -27,18 +71,17 @@ function M.resolve_import_paths(conf, base_dir, import_path)
     end
   end
 
-  local absolute = vim.fn.fnamemodify(base_dir .. "/" .. import_path, ":p")
-  add(absolute)
+  add(base_path)
 
   if not has_extension(import_path) then
     for _, ext in ipairs(conf.search_extensions) do
-      add(absolute .. ext)
+      add(base_path .. ext)
     end
 
-    local stat = uv.fs_stat(absolute)
+    local stat = uv.fs_stat(base_path)
     if stat and stat.type == "directory" then
       for _, ext in ipairs(conf.search_extensions) do
-        add(absolute .. "/index" .. ext)
+        add(util.join_paths(base_path, "index" .. ext))
       end
     end
   end
@@ -144,7 +187,7 @@ function M.collect_client_components(conf, bufnr, lines)
 
   for _, statement in ipairs(statements) do
     local source, specifiers = M.parse_statement(statement)
-    if source and #specifiers > 0 and source:match "^%." then
+    if source and #specifiers > 0 then
       for _, file_path in ipairs(M.resolve_import_paths(conf, base_dir, source)) do
         if directives.file_has_directive(conf, file_path) then
           for _, spec in ipairs(specifiers) do

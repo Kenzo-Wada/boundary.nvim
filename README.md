@@ -4,7 +4,7 @@ boundary.nvim surfaces `'use client'` boundaries in your React code by displayin
 
 ## ✨ Features
 
-- Detects relative imports that resolve to components declaring `'use client'`.
+- Detects imports that resolve to components declaring `'use client'`.
 - Shows a `'use client'` marker next to every JSX usage of those components via virtual text (default: `'use client'`).
 - Watches buffers automatically so markers stay in sync while you edit, or expose a manual refresh command if you prefer.
 - Understands default, named, and aliased imports, as well as directory imports that resolve to an `index` file.
