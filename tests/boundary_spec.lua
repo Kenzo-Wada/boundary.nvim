@@ -1,5 +1,5 @@
 local Suite = require("boundary.test_suite")
-local suite = Suite.new("boundary.ensure_use_client")
+local suite = Suite.new("boundary.markers")
 
 local uv = vim.loop
 
@@ -52,7 +52,7 @@ local function setup_buffer(path)
 	return vim.api.nvim_get_current_buf()
 end
 
-suite:add("adds directive when importing client component", function(t)
+suite:add("marks usage of client components", function(t)
 	local root = create_temp_dir()
 	local old_cwd = uv.cwd()
 	uv.chdir(root)
@@ -73,23 +73,27 @@ export default function Page() {
 	local bufnr = setup_buffer(join_paths(root, "app/page.tsx"))
 	vim.bo[bufnr].filetype = "typescriptreact"
 
-	local added = require("boundary").ensure_use_client(bufnr)
-	t:ok(added, "directive should be added when client component detected")
+	local marked = require("boundary").refresh(bufnr)
+	t:eq(1, #marked, "one line should be marked")
+	t:eq(3, marked[1], "marker should be on the line with <Button />")
 
-	local first_line = vim.api.nvim_buf_get_lines(bufnr, 0, 1, false)[1]
-	t:eq("'use client'", first_line)
+	local extmarks = vim.api.nvim_buf_get_extmarks(bufnr, require("boundary").namespace, 0, -1, {})
+	t:eq(1, #extmarks, "one extmark should be placed")
+	t:eq(3, extmarks[1][2], "extmark should target the JSX line")
 
 	uv.chdir(old_cwd)
 	rm_rf(root)
 end)
 
-suite:add("does not add directive when not required", function(t)
+suite:add("does not mark components without use client boundary", function(t)
 	local root = create_temp_dir()
 	local old_cwd = uv.cwd()
 	uv.chdir(root)
 	write_file(
 		join_paths(root, "components/Button.tsx"),
-		[[export default function Button() {}
+		[[export default function Button() {
+  return null
+}
 ]]
 	)
 	write_file(
@@ -108,11 +112,49 @@ export default function Page() {
 	local bufnr = setup_buffer(join_paths(root, "app/page.tsx"))
 	vim.bo[bufnr].filetype = "typescriptreact"
 
-	local added = require("boundary").ensure_use_client(bufnr)
-	t:eq(false, added, "directive should not be added when dependency is not client")
+	local marked = require("boundary").refresh(bufnr)
+	t:eq(0, #marked, "no lines should be marked")
 
-	local first_line = vim.api.nvim_buf_get_lines(bufnr, 0, 1, false)[1]
-	t:neq("'use client'", first_line)
+	local extmarks = vim.api.nvim_buf_get_extmarks(bufnr, require("boundary").namespace, 0, -1, {})
+	t:eq(0, #extmarks, "no extmarks should be present")
+
+	uv.chdir(old_cwd)
+	rm_rf(root)
+end)
+
+suite:add("supports directory imports resolved to index files", function(t)
+	local root = create_temp_dir()
+	local old_cwd = uv.cwd()
+	uv.chdir(root)
+	write_file(join_paths(root, "components/index.tsx"), "'use client'\nexport { default as Button } from './Button'\n")
+	write_file(join_paths(root, "components/Button.tsx"), "export default function Button() { return null }\n")
+	write_file(
+		join_paths(root, "app/page.tsx"),
+		[[import { Button } from '../components'
+
+export default function Page() {
+  return (
+    <div>
+      <Button />
+    </div>
+  )
+}
+]]
+	)
+
+	require("boundary").reset()
+	require("boundary").setup({ auto = false })
+
+	local bufnr = setup_buffer(join_paths(root, "app/page.tsx"))
+	vim.bo[bufnr].filetype = "typescriptreact"
+
+	local marked = require("boundary").refresh(bufnr)
+	t:eq(1, #marked, "the Button usage should be marked")
+	t:eq(5, marked[1], "marker should be applied to the Button line")
+
+	local extmarks = vim.api.nvim_buf_get_extmarks(bufnr, require("boundary").namespace, 0, -1, {})
+	t:eq(1, #extmarks, "one extmark should be present")
+	t:eq(5, extmarks[1][2], "extmark row matches JSX line")
 
 	uv.chdir(old_cwd)
 	rm_rf(root)
