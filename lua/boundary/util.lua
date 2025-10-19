@@ -58,6 +58,20 @@ function M.normalize_path(path)
   return vim.fn.fnamemodify(path, ":p")
 end
 
+function M.dirname(path)
+  if not path or path == "" then
+    return nil
+  end
+  if vim.fs and vim.fs.dirname then
+    return vim.fs.dirname(path)
+  end
+  local parent = vim.fn.fnamemodify(path, ":h")
+  if parent == path then
+    return nil
+  end
+  return parent
+end
+
 function M.find_project_root(start_dir, patterns)
   if not (vim.fs and vim.fs.find) then
     return nil
