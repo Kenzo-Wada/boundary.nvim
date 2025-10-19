@@ -1,0 +1,25 @@
+name: Format
+
+on:
+  pull_request:
+    branches:
+      - "*"
+  workflow_dispatch:
+
+jobs:
+  fmt:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Stylua
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y stylua
+
+      - name: Run formatter
+        run: make fmt
+
+      - name: Ensure no diff
+        run: git diff --exit-code

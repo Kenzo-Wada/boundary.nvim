@@ -2,6 +2,12 @@ NVIM ?= nvim
 TEST_INIT ?= tests/minimal_init.lua
 TEST_COMMAND ?= lua require('tests.run').run()
 
+.PHONY: fmt
+## Format Lua sources with stylua.
+fmt:
+	@command -v stylua >/dev/null || { echo "Error: stylua not found on PATH"; exit 1; }
+	@stylua lua tests
+
 .PHONY: test
 ## Run the automated test suite via Neovim.
 test:
