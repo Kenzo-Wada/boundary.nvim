@@ -13,7 +13,7 @@ Thank you for your interest in improving **boundary.nvim**! This document explai
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/mimifuwacc/boundary.nvim.git
+   git clone https://github.com/Kenzo-Wada/boundary.nvim.git
    cd boundary.nvim
    ```
 2. Ensure `nvim` is on your `PATH` and matches the minimum version.
