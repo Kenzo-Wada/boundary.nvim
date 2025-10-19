@@ -64,7 +64,7 @@ local function normalize_target(pattern)
   elseif pattern:sub(-1) == "*" then
     pattern = pattern:sub(1, -2)
   end
-  pattern = pattern:gsub("^%./", "")
+  pattern = pattern:gsub("^%.[/\\]", "")
   return pattern
 end
 
