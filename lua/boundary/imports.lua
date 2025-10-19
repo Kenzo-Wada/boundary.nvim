@@ -11,7 +11,7 @@ end
 
 local function resolve_alias(conf, base_dir, import_path)
   if util.tbl_is_empty(conf.aliases) then
-    return nil
+    return {}
   end
 
   for alias, target in pairs(conf.aliases) do
@@ -24,37 +24,67 @@ local function resolve_alias(conf, base_dir, import_path)
       end
       target_path = target_path:gsub("^%./", "")
 
-      local base
-      if util.is_absolute(target_path) then
-        base = target_path
-      else
-        local project_root = util.find_project_root(base_dir, conf.root_patterns)
-        if project_root then
-          base = util.join_paths(project_root, target_path)
-        else
-          base = util.join_paths(base_dir, target_path)
+      local candidates = {}
+      local added = {}
+      local function push(path)
+        if not path or path == "" then
+          return
+        end
+        local combined = util.join_paths(path, remainder)
+        if combined ~= "" then
+          local normalized = util.normalize_path(combined)
+          if not added[normalized] then
+            candidates[#candidates + 1] = normalized
+            added[normalized] = true
+          end
         end
       end
 
-      local combined = util.join_paths(base, remainder)
-      if combined ~= "" then
-        return util.normalize_path(combined)
+      if util.is_absolute(target_path) then
+        push(target_path)
+      else
+        local project_root = util.find_project_root(base_dir, conf.root_patterns)
+        if project_root then
+          push(util.join_paths(project_root, target_path))
+        end
+
+        local cwd = uv.cwd()
+        if cwd and cwd ~= "" then
+          push(util.join_paths(cwd, target_path))
+        end
+
+        local visited = {}
+        local current = base_dir
+        while current and current ~= "" and not visited[current] do
+          visited[current] = true
+          push(util.join_paths(current, target_path))
+          local parent = util.dirname(current)
+          if not parent then
+            break
+          end
+          current = parent
+        end
       end
+
+      return candidates
     end
   end
 
-  return nil
+  return {}
 end
 
 function M.resolve_import_paths(conf, base_dir, import_path)
-  local base_path
+  local base_paths = {}
   if import_path:match "^%." then
-    base_path = vim.fn.fnamemodify(base_dir .. "/" .. import_path, ":p")
+    local base_path = vim.fn.fnamemodify(base_dir .. "/" .. import_path, ":p")
+    if base_path and base_path ~= "" then
+      base_paths[1] = util.normalize_path(base_path)
+    end
   else
-    base_path = resolve_alias(conf, base_dir, import_path)
+    base_paths = resolve_alias(conf, base_dir, import_path)
   end
 
-  if not base_path then
+  if util.tbl_is_empty(base_paths) then
     return {}
   end
 
@@ -71,17 +101,19 @@ function M.resolve_import_paths(conf, base_dir, import_path)
     end
   end
 
-  add(base_path)
+  for _, base_path in ipairs(base_paths) do
+    add(base_path)
 
-  if not has_extension(import_path) then
-    for _, ext in ipairs(conf.search_extensions) do
-      add(base_path .. ext)
-    end
-
-    local stat = uv.fs_stat(base_path)
-    if stat and stat.type == "directory" then
+    if not has_extension(import_path) then
       for _, ext in ipairs(conf.search_extensions) do
-        add(util.join_paths(base_path, "index" .. ext))
+        add(base_path .. ext)
+      end
+
+      local stat = uv.fs_stat(base_path)
+      if stat and stat.type == "directory" then
+        for _, ext in ipairs(conf.search_extensions) do
+          add(util.join_paths(base_path, "index" .. ext))
+        end
       end
     end
   end
