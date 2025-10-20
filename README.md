@@ -1,5 +1,7 @@
 # 🌐 boundary.nvim
 
+<img width="1280" height="720" alt="Screenshot from 2025-10-20 11-36-16" src="https://github.com/user-attachments/assets/e8438b87-3264-42b1-96b4-a4201d1062c7" />
+
 boundary.nvim surfaces `'use client'` boundaries in your React code by displaying inline markers next to component usages. Inspired by the [RSC Boundary Marker VS Code extension](https://github.com/mimifuwacc/rsc-boundary-marker), it brings the same visibility to Neovim workflows.
 
 ## ✨ Features
@@ -35,16 +37,16 @@ When `auto` is disabled you can refresh manually with:
 
 `require('boundary').setup()` accepts the following options:
 
-| Option              | Type       | Default                                                                        | Description                                                                 |
-| ------------------- | ---------- | ------------------------------------------------------------------------------ | --------------------------------------------------------------------------- |
-| `marker_text`       | `string`   | `'use client'`                                                                 | Virtual text displayed next to each matching component usage.               |
-| `marker_hl_group`   | `string`   | `BoundaryMarker`                                                               | Highlight group applied to the virtual text. Links to `Comment` by default. |
-| `directives`        | `string[]` | `{ "'use client'", '"use client"' }`                                           | Directive strings recognised in imported files.                             |
-| `search_extensions` | `string[]` | `{ '.tsx', '.ts', '.jsx', '.js' }`                                             | Extensions appended when resolving bare relative imports.                   |
-| `filetypes`         | `string[]` | `{'javascript', 'javascriptreact', 'typescript', 'typescriptreact'}`           | Filetypes that trigger scanning.                                            |
-| `max_read_bytes`    | `number`   | `4096`                                                                         | Maximum bytes read from each import when looking for directives.            |
-| `auto`              | `boolean`  | `true`                                                                         | Enable automatic refreshing via autocommands.                               |
-| `events`            | `string[]` | `{ 'BufEnter', 'BufWritePost', 'TextChanged', 'TextChangedI', 'InsertLeave' }` | Events used to refresh when `auto` is true.                                 |
+| Option              | Type       | Default                                                              | Description                                                                 |
+| ------------------- | ---------- | -------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| `marker_text`       | `string`   | `'use client'`                                                       | Virtual text displayed next to each matching component usage.               |
+| `marker_hl_group`   | `string`   | `BoundaryMarker`                                                     | Highlight group applied to the virtual text. Links to `Comment` by default. |
+| `directives`        | `string[]` | `{ "'use client'", '"use client"' }`                                 | Directive strings recognised in imported files.                             |
+| `search_extensions` | `string[]` | `{ '.tsx', '.ts', '.jsx', '.js' }`                                   | Extensions appended when resolving bare relative imports.                   |
+| `filetypes`         | `string[]` | `{'javascript', 'javascriptreact', 'typescript', 'typescriptreact'}` | Filetypes that trigger scanning.                                            |
+| `max_read_bytes`    | `number`   | `4096`                                                               | Maximum bytes read from each import when looking for directives.            |
+| `auto`              | `boolean`  | `true`                                                               | Enable automatic refreshing via autocommands.                               |
+| `events`            | `string[]` | `{ 'BufEnter', 'BufWritePost', 'TextChanged', 'InsertLeave' }`       | Events used to refresh when `auto` is true.                                 |
 
 ## 🔄 Usage Flow
 
