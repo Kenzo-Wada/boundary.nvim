@@ -24,7 +24,6 @@ local default_config = {
     "BufEnter",
     "BufWritePost",
     "TextChanged",
-    "TextChangedI",
     "InsertLeave",
   },
 }
