@@ -1,5 +1,8 @@
 # 🌐 boundary.nvim
 
+<img width="1280" height="720" alt="Screenshot from 2025-10-20 11-36-16" src="https://github.com/user-attachments/assets/e8438b87-3264-42b1-96b4-a4201d1062c7" />
+
+
 boundary.nvim surfaces `'use client'` boundaries in your React code by displaying inline markers next to component usages. Inspired by the [RSC Boundary Marker VS Code extension](https://github.com/mimifuwacc/rsc-boundary-marker), it brings the same visibility to Neovim workflows.
 
 ## ✨ Features
