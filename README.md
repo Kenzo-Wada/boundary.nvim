@@ -5,7 +5,18 @@ Inspired by the VS Code extension [RSC Boundary Marker](https://github.com/mimif
 
 > If this helps, please ⭐ star the repo!
 
+---
+
+## 📸 Examples
+
+### default
 <img width="1280" height="720" alt="Screenshot" src="https://github.com/user-attachments/assets/e8438b87-3264-42b1-96b4-a4201d1062c7" />
+
+### custom marker text
+<img width="1280" height="720" alt="Screenshot from 2025-10-20 11-37-52" src="https://github.com/user-attachments/assets/58f370f1-9f12-46cc-9b58-732bb5e0b6af" />
+
+### custom hl color
+<img width="1280" height="720" alt="Screenshot from 2025-10-20 11-42-47" src="https://github.com/user-attachments/assets/34f84fc9-5e8c-4606-8cb1-8cf4524f6462" />
 
 ---
 
