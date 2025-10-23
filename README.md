@@ -72,6 +72,7 @@ All options are optional; sensible defaults are provided.
 | ------------------- | ---------- | ---------------------------------------------------------------------- | --------------------------------------------------------------- |
 | `marker_text`       | `string`   | `'use client'`                                                         | Virtual text displayed next to each matching JSX usage.         |
 | `marker_hl_group`   | `string`   | `BoundaryMarker`                                                       | Highlight group for the marker (links to `Comment` by default). |
+| `hover_only`        | `boolean`  | `false`                                                                | Only display markers when the cursor is on the matching line.   |
 | `directives`        | `string[]` | `{ "'use client'", '"use client"' }`                                   | Directive strings recognized in imported files.                 |
 | `search_extensions` | `string[]` | `{ ".tsx", ".ts", ".jsx", ".js" }`                                     | File extensions tried when resolving bare relative imports.     |
 | `filetypes`         | `string[]` | `{ "javascript", "javascriptreact", "typescript", "typescriptreact" }` | Filetypes that trigger scanning.                                |
