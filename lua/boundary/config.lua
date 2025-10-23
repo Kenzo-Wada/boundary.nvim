@@ -3,6 +3,7 @@ local M = {}
 local default_config = {
   marker_text = "'use client'",
   marker_hl_group = "BoundaryMarker",
+  hover_only = false,
   directives = { "'use client'", '"use client"' },
   search_extensions = { ".tsx", ".ts", ".jsx", ".js" },
   aliases = {},

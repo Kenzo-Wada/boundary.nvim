@@ -2,6 +2,13 @@ local util = require "boundary.util"
 
 local M = {}
 
+local function set_extmark(bufnr, namespace, conf, line)
+  vim.api.nvim_buf_set_extmark(bufnr, namespace, line, 0, {
+    virt_text = { { conf.marker_text, conf.marker_hl_group } },
+    virt_text_pos = "eol",
+  })
+end
+
 function M.clear(bufnr, namespace)
   vim.api.nvim_buf_clear_namespace(bufnr, namespace, 0, -1)
 end
@@ -39,14 +46,19 @@ function M.apply(bufnr, namespace, conf, marks)
   end
   table.sort(lines)
 
+  if conf.hover_only then
+    return lines
+  end
+
   for _, line in ipairs(lines) do
-    vim.api.nvim_buf_set_extmark(bufnr, namespace, line, 0, {
-      virt_text = { { conf.marker_text, conf.marker_hl_group } },
-      virt_text_pos = "eol",
-    })
+    set_extmark(bufnr, namespace, conf, line)
   end
 
   return lines
+end
+
+function M.set(bufnr, namespace, conf, line)
+  set_extmark(bufnr, namespace, conf, line)
 end
 
 return M

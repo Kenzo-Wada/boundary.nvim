@@ -60,6 +60,7 @@ local cases = {
   require "tests.cases.alias_without_root",
   require "tests.cases.alias_from_buffer_ancestor",
   require "tests.cases.multiple_client_components",
+  require "tests.cases.hover_only",
 }
 
 local function run_case(case)
@@ -110,9 +111,26 @@ local function run_case(case)
     end
 
     local extmarks = vim.api.nvim_buf_get_extmarks(bufnr, require("boundary").namespace, 0, -1, {})
-    t:eq(#case.expected_lines, #extmarks, "extmark count should match expected markers")
-    for index, line in ipairs(case.expected_lines) do
-      t:eq(line, extmarks[index][2], string.format("extmark %d should target line %d", index, line))
+    local expected_extmark_count = case.expected_extmark_count
+    if expected_extmark_count == nil then
+      expected_extmark_count = #case.expected_lines
+    end
+    t:eq(expected_extmark_count, #extmarks, "extmark count should match expectation")
+
+    local expected_extmark_lines = case.expected_extmark_lines
+    if expected_extmark_lines == nil and expected_extmark_count == #case.expected_lines then
+      expected_extmark_lines = case.expected_lines
+    end
+
+    if expected_extmark_lines ~= nil then
+      t:eq(#expected_extmark_lines, #extmarks, "expected extmark lines should match extmark count")
+      for index, line in ipairs(expected_extmark_lines) do
+        t:eq(line, extmarks[index][2], string.format("extmark %d should target line %d", index, line))
+      end
+    end
+
+    if case.after_refresh then
+      case.after_refresh(t, bufnr)
     end
 
     if case.stub_project_root ~= nil then
