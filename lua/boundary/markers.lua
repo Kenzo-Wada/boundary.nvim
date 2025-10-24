@@ -50,7 +50,7 @@ function M.find_lines(lines, components)
 
     if not matched then
       for _, namespace in ipairs(namespace_names) do
-        local pattern = "<%s*" .. vim.pesc(namespace) .. "%.[%w_$.]+%f[^%w_$.]"
+        local pattern = "<%s*" .. vim.pesc(namespace) .. "%.[%w_.]+%f[^%w_.]"
         if line:find(pattern) then
           marks[line_idx - 1] = true
           break
