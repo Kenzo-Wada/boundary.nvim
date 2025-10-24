@@ -61,6 +61,7 @@ local cases = {
   require "tests.cases.alias_from_buffer_ancestor",
   require "tests.cases.multiple_client_components",
   require "tests.cases.hover_only",
+  require "tests.cases.namespace_import",
 }
 
 local function run_case(case)
