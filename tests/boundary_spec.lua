@@ -62,6 +62,9 @@ local cases = {
   require "tests.cases.multiple_client_components",
   require "tests.cases.hover_only",
   require "tests.cases.namespace_import",
+  require "tests.cases.next_dynamic",
+  require "tests.cases.react_lazy",
+  require "tests.cases.react_lazy_alias",
 }
 
 local function run_case(case)
