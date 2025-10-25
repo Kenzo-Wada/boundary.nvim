@@ -162,6 +162,48 @@ local function split_named_specifiers(body)
   return specifiers
 end
 
+local function extract_dynamic_import_path(body)
+  if not body or body == "" then
+    return nil
+  end
+
+  local _, _, _, path = body:find "import%s*%(%s*(['\"])(.-)%1%s*%)"
+  return path
+end
+
+local function collect_dynamic_components(conf, base_dir, lines)
+  local components = {}
+  local text = table.concat(lines, "\n")
+
+  local function handle_match(name, body)
+    local import_path = extract_dynamic_import_path(body)
+    if not import_path then
+      return
+    end
+
+    for _, file_path in ipairs(M.resolve_import_paths(conf, base_dir, import_path)) do
+      if directives.file_has_directive(conf, file_path) then
+        components[name] = true
+        break
+      end
+    end
+  end
+
+  for name, body in text:gmatch "([%w_$.]+)%s*=%s*dynamic%s*(%b())" do
+    handle_match(name, body)
+  end
+
+  for name, body in text:gmatch "([%w_$.]+)%s*=%s*React%.lazy%s*(%b())" do
+    handle_match(name, body)
+  end
+
+  for name, body in text:gmatch "([%w_$.]+)%s*=%s*lazy%s*(%b())" do
+    handle_match(name, body)
+  end
+
+  return components
+end
+
 function M.parse_statement(statement)
   if statement:match "^%s*import%s+type%s" then
     return nil, {}, {}
@@ -246,6 +288,11 @@ function M.collect_client_components(conf, bufnr, lines)
         end
       end
     end
+  end
+
+  local dynamic_components = collect_dynamic_components(conf, base_dir, lines)
+  for name, value in pairs(dynamic_components) do
+    components[name] = value
   end
 
   return components
