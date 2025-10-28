@@ -20,16 +20,41 @@ function M.find_lines(lines, components)
   end
 
   local component_names = {}
-  for name in pairs(components) do
-    component_names[#component_names + 1] = name
+  for name, value in pairs(components) do
+    if name ~= "__namespaces" and value then
+      component_names[#component_names + 1] = name
+    end
+  end
+
+  local namespace_names = {}
+  local namespaces = components.__namespaces
+  if namespaces then
+    for name, value in pairs(namespaces) do
+      if value then
+        namespace_names[#namespace_names + 1] = name
+      end
+    end
   end
 
   for line_idx, line in ipairs(lines) do
+    local matched = false
+
     for _, name in ipairs(component_names) do
       local pattern = "<%s*" .. vim.pesc(name) .. "%f[^%w_]"
       if line:find(pattern) then
         marks[line_idx - 1] = true
+        matched = true
         break
+      end
+    end
+
+    if not matched then
+      for _, namespace in ipairs(namespace_names) do
+        local pattern = "<%s*" .. vim.pesc(namespace) .. "%.[%w_.]+%f[^%w_.]"
+        if line:find(pattern) then
+          marks[line_idx - 1] = true
+          break
+        end
       end
     end
   end

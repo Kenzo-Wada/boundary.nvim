@@ -162,14 +162,56 @@ local function split_named_specifiers(body)
   return specifiers
 end
 
+local function extract_dynamic_import_path(body)
+  if not body or body == "" then
+    return nil
+  end
+
+  local _, _, _, path = body:find "import%s*%(%s*(['\"])(.-)%1%s*%)"
+  return path
+end
+
+local function collect_dynamic_components(conf, base_dir, lines)
+  local components = {}
+  local text = table.concat(lines, "\n")
+
+  local function handle_match(name, body)
+    local import_path = extract_dynamic_import_path(body)
+    if not import_path then
+      return
+    end
+
+    for _, file_path in ipairs(M.resolve_import_paths(conf, base_dir, import_path)) do
+      if directives.file_has_directive(conf, file_path) then
+        components[name] = true
+        break
+      end
+    end
+  end
+
+  for name, body in text:gmatch "([%w_$.]+)%s*=%s*dynamic%s*(%b())" do
+    handle_match(name, body)
+  end
+
+  for name, body in text:gmatch "([%w_$.]+)%s*=%s*React%.lazy%s*(%b())" do
+    handle_match(name, body)
+  end
+
+  for name, body in text:gmatch "([%w_$.]+)%s*=%s*lazy%s*(%b())" do
+    handle_match(name, body)
+  end
+
+  return components
+end
+
 function M.parse_statement(statement)
   if statement:match "^%s*import%s+type%s" then
-    return nil, {}
+    return nil, {}, {}
   end
 
   local source = statement:match "from%s+['\"](.-)['\"]"
   if not source then
-    return nil, {}
+    return nil, {}, {}
   end
 
   local clause = statement:match "^%s*import%s+(.-)%s+from%s+['\"][^'\"]+['\"]" or ""
@@ -177,10 +219,11 @@ function M.parse_statement(statement)
   clause = util.trim(clause)
 
   if clause == "" then
-    return source, {}
+    return source, {}, {}
   end
 
   local specifiers = {}
+  local namespaces = {}
 
   local default_name, named_body = clause:match "^([%w_$.]+)%s*,%s*{(.-)}$"
   if default_name then
@@ -188,7 +231,7 @@ function M.parse_statement(statement)
     for _, name in ipairs(split_named_specifiers(named_body)) do
       specifiers[#specifiers + 1] = name
     end
-    return source, specifiers
+    return source, specifiers, namespaces
   end
 
   local named_only = clause:match "^{(.-)}$"
@@ -196,16 +239,17 @@ function M.parse_statement(statement)
     for _, name in ipairs(split_named_specifiers(named_only)) do
       specifiers[#specifiers + 1] = name
     end
-    return source, specifiers
+    return source, specifiers, namespaces
   end
 
   local namespace = clause:match "^%*%s+as%s+([%w_$.]+)$"
   if namespace then
-    return source, {}
+    namespaces[#namespaces + 1] = namespace
+    return source, specifiers, namespaces
   end
 
   specifiers[#specifiers + 1] = clause
-  return source, specifiers
+  return source, specifiers, namespaces
 end
 
 function M.collect_client_components(conf, bufnr, lines)
@@ -220,17 +264,35 @@ function M.collect_client_components(conf, bufnr, lines)
   local components = {}
 
   for _, statement in ipairs(statements) do
-    local source, specifiers = M.parse_statement(statement)
-    if source and #specifiers > 0 then
+    local source, specifiers, namespaces = M.parse_statement(statement)
+    local has_specifiers = specifiers and #specifiers > 0
+    local has_namespaces = namespaces and #namespaces > 0
+
+    if source and (has_specifiers or has_namespaces) then
       for _, file_path in ipairs(M.resolve_import_paths(conf, base_dir, source)) do
         if directives.file_has_directive(conf, file_path) then
-          for _, spec in ipairs(specifiers) do
-            components[spec] = true
+          if has_specifiers then
+            for _, spec in ipairs(specifiers) do
+              components[spec] = true
+            end
           end
+
+          if has_namespaces then
+            components.__namespaces = components.__namespaces or {}
+            for _, namespace in ipairs(namespaces) do
+              components.__namespaces[namespace] = true
+            end
+          end
+
           break
         end
       end
     end
+  end
+
+  local dynamic_components = collect_dynamic_components(conf, base_dir, lines)
+  for name, value in pairs(dynamic_components) do
+    components[name] = value
   end
 
   return components
